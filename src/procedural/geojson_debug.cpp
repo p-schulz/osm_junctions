@@ -1,12 +1,12 @@
-#include "osm2xodr/procedural/geojson_debug.hpp"
+#include "xosm/procedural/geojson_debug.hpp"
 
-#include "osm2xodr/procedural/geo_extra.hpp"
-#include "osm2xodr/util.hpp"
+#include "xosm/procedural/geo_extra.hpp"
+#include "xosm/util.hpp"
 
 #include <fstream>
 #include <iomanip>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 namespace {
 
@@ -83,4 +83,4 @@ void write_debug_geojson(const GeneratedRoadGraph& graph, const geo::LocalProjec
     write_graph(graph, projector, dir + "/graph.geojson");
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

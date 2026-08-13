@@ -4,15 +4,15 @@
 // built from OSM ways, used to compute real OSM topological degree (the basis for both merge
 // decisions and control-point classification). Not part of the public procedural/ API.
 
-#include "osm2xodr/osm_parse.hpp"
-#include "osm2xodr/procedural/config.hpp"
+#include "xosm/osm_parse.hpp"
+#include "xosm/procedural/config.hpp"
 
 #include <cstdint>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 struct WayGraph {
     std::vector<const osm::RawWay*> ways; // all road ways considered (highway=* vehicle classes only)
@@ -52,4 +52,4 @@ inline bool highway_is_control_line_class(const Tags& tags, const GeneratorConfi
     return hw && config.control_line_highways.count(*hw) != 0;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

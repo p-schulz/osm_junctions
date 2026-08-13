@@ -1,8 +1,8 @@
 #pragma once
 
-#include "osm2xodr/geo.hpp"
-#include "osm2xodr/model.hpp"
-#include "osm2xodr/tags.hpp"
+#include "xosm/geo.hpp"
+#include "xosm/model.hpp"
+#include "xosm/tags.hpp"
 
 #include <cstdint>
 #include <optional>
@@ -28,7 +28,7 @@
 // is interior junction-connector roads (generate_intersections) and, optionally, lane-count-mismatch
 // bridge sections (cleanup_and_validate) -- both clearly marked via Connection::synthetic /
 // RoadSegment::junction_id, mirroring how the existing model::MapModel already distinguishes them.
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 struct ControlLine {
     std::string id;
@@ -123,4 +123,4 @@ struct GeneratedRoadGraph {
     }
 };
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

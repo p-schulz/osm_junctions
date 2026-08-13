@@ -1,9 +1,9 @@
 #pragma once
 
-#include "osm2xodr/procedural/config.hpp"
+#include "xosm/procedural/config.hpp"
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 GeneratorConfig parse_args(int argc, char** argv);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

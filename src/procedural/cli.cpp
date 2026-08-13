@@ -1,15 +1,15 @@
-#include "osm2xodr/procedural/cli.hpp"
+#include "xosm/procedural/cli.hpp"
 
-#include "osm2xodr/util.hpp"
+#include "xosm/util.hpp"
 
 #include <cstdlib>
 #include <iostream>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 GeneratorConfig parse_args(const int argc, char** argv) {
     if (argc < 3) {
-        std::cerr << "Usage: osm2xodr-procedural <input.osm|osm.pbf> <output.xodr> [options]\n";
+        std::cerr << "Usage: xosm <input.osm|osm.pbf> <output.xodr> [options]\n";
         std::cerr << "Try --help for details.\n";
         std::exit(2);
     }
@@ -27,7 +27,7 @@ GeneratorConfig parse_args(const int argc, char** argv) {
         const std::string arg = argv[i];
         if (arg == "--help") {
             std::cout <<
-                "Usage: osm2xodr-procedural <input.osm|osm.pbf> <output.xodr> [options]\n\n"
+                "Usage: xosm <input.osm|osm.pbf> <output.xodr> [options]\n\n"
                 "Generates an OpenDRIVE road network from OSM-derived control lines/points\n"
                 "(see docs/procedural_pipeline.md), reusing the existing OSM parser and XODR writer.\n\n"
                 "Options:\n"
@@ -119,4 +119,4 @@ GeneratorConfig parse_args(const int argc, char** argv) {
     return c;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

@@ -1,12 +1,12 @@
-#include "osm2xodr/procedural/intersections.hpp"
+#include "xosm/procedural/intersections.hpp"
 
-#include "osm2xodr/procedural/geo_extra.hpp"
+#include "xosm/procedural/geo_extra.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 namespace {
 
@@ -217,4 +217,4 @@ void generate_intersections(GeneratedRoadGraph& graph, const GeneratorConfig& co
     }
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

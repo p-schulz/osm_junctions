@@ -1,7 +1,7 @@
 #pragma once
 
-#include "osm2xodr/geo.hpp"
-#include "osm2xodr/tags.hpp"
+#include "xosm/geo.hpp"
+#include "xosm/tags.hpp"
 
 #include <cstdint>
 #include <limits>
@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-namespace osm2xodr::model {
+namespace xosm::model {
 
 struct LaneSpec {
     int id = 0;
@@ -177,4 +177,4 @@ struct MapModel {
     int compound_junction_node_total = 0; // total OSM junction nodes folded into those junctions
 };
 
-} // namespace osm2xodr::model
+} // namespace xosm::model

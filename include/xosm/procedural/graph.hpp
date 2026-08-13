@@ -1,9 +1,9 @@
 #pragma once
 
-#include "osm2xodr/procedural/config.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/procedural/config.hpp"
+#include "xosm/procedural/types.hpp"
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 // Builds the base GeneratedRoadGraph: nodes are `control_points`, edges are the sub-segments of
 // each control line between consecutive control points that lie on it (in s-order). Every edge maps
@@ -22,4 +22,4 @@ GeneratedRoadGraph build_graph(std::vector<ControlLine> control_lines, std::vect
 // Degree (incident connection count) of a control point within `graph`.
 int control_point_degree(const GeneratedRoadGraph& graph, const std::string& control_point_id);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

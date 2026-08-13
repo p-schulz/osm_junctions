@@ -1,11 +1,13 @@
-// osm2xodr-gui: a small imgui viewer around the procedural pipeline (osm2xodr::procedural). A top
-// command bar imports an OSM file and runs the pipeline; the main area renders a 2D preview of the
-// resulting GeneratedRoadGraph (control-point-derived roads, junction connectors, control points)
-// directly from its projected-meter geometry -- no separate rendering model, just the same graph
-// osm2xodr-procedural writes to OpenDRIVE.
+// xosm-gui: a small imgui viewer around the procedural pipeline (xosm::procedural). A top command
+// bar imports an OSM file, runs the pipeline, and can export the result to OpenDRIVE (reusing
+// xosm::xodr::write_file unchanged); the main area renders a lane-by-lane 2D preview of the
+// resulting GeneratedRoadGraph directly from its projected-meter geometry -- no separate rendering
+// model, just the same graph that gets written to .xodr.
 
-#include "osm2xodr/procedural/pipeline.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/options.hpp"
+#include "xosm/procedural/pipeline.hpp"
+#include "xosm/procedural/types.hpp"
+#include "xosm/xodr_writer.hpp"
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
@@ -17,15 +19,18 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <string>
 #include <vector>
 
-using osm2xodr::geo::Vec2;
-using osm2xodr::procedural::Connection;
-using osm2xodr::procedural::ControlPoint;
-using osm2xodr::procedural::ControlPointType;
-using osm2xodr::procedural::GeneratedRoadGraph;
-using osm2xodr::procedural::GeneratorConfig;
+using xosm::geo::Vec2;
+using xosm::geo::left_normal;
+using xosm::geo::normalize;
+using xosm::procedural::Connection;
+using xosm::procedural::ControlPoint;
+using xosm::procedural::ControlPointType;
+using xosm::procedural::GeneratedRoadGraph;
+using xosm::procedural::GeneratorConfig;
 
 namespace {
 
@@ -43,7 +48,7 @@ ImVec2 world_to_screen(const Vec2& world, const ImVec2& origin, const Camera& ca
 
 // Standard cubic-Bezier evaluation for a junction connector's ParamPoly3 primitive (model.hpp
 // stores its control points in a local frame rotated by hdg, origin (x,y); P0 is implicitly (0,0)).
-Vec2 bezier_point(const osm2xodr::model::GeomPrimitive& g, const float t) {
+Vec2 bezier_point(const xosm::model::GeomPrimitive& g, const float t) {
     const Vec2 p0{0.0, 0.0};
     const Vec2& p1 = g.local_p1;
     const Vec2& p2 = g.local_p2;
@@ -64,11 +69,26 @@ std::vector<Vec2> connection_polyline(const Connection& conn) {
     return pts;
 }
 
-ImU32 connection_color(const Connection& conn) {
-    if (!conn.diagnostic.empty()) return IM_COL32(230, 60, 60, 255);       // dangling boundary stub
-    if (!conn.junction_id.empty()) return IM_COL32(255, 165, 0, 255);      // junction connector
-    if (conn.synthetic) return IM_COL32(200, 100, 255, 255);               // lane-count bridge
-    return IM_COL32(220, 220, 220, 255);                                  // ordinary road
+// Unit tangent at polyline vertex `i` (central difference away from the endpoints, so a lane strip
+// doesn't kink at interior vertices).
+Vec2 tangent_at(const std::vector<Vec2>& pts, const std::size_t i) {
+    if (pts.size() < 2) return Vec2{1.0, 0.0};
+    if (i == 0) return normalize(pts[1] - pts[0]);
+    if (i + 1 == pts.size()) return normalize(pts[i] - pts[i - 1]);
+    return normalize(pts[i + 1] - pts[i - 1]);
+}
+
+// Per-lane fill color: a family color by connection role (ordinary/junction-connector/bridge/
+// dangling stub), a directionality tint (backward/left lanes read slightly bluer than forward/right
+// -- oncoming vs. same-direction traffic), and a light/dark alternation by lane index so adjacent
+// lanes in the same stack are individually distinguishable rather than reading as one wide fill.
+ImU32 lane_fill_color(const Connection& conn, const bool is_left, const int index_from_center) {
+    const bool alt = (index_from_center % 2) == 1;
+    if (!conn.diagnostic.empty()) return alt ? IM_COL32(205, 75, 75, 255) : IM_COL32(175, 58, 58, 255);
+    if (!conn.junction_id.empty()) return alt ? IM_COL32(232, 152, 62, 255) : IM_COL32(203, 128, 42, 255);
+    if (conn.synthetic) return alt ? IM_COL32(178, 112, 218, 255) : IM_COL32(153, 92, 193, 255);
+    if (is_left) return alt ? IM_COL32(112, 122, 148, 255) : IM_COL32(96, 106, 132, 255); // backward/oncoming
+    return alt ? IM_COL32(168, 168, 173, 255) : IM_COL32(147, 147, 152, 255);              // forward
 }
 
 ImU32 control_point_color(const ControlPointType t) {
@@ -91,6 +111,59 @@ const char* control_point_label(const ControlPointType t) {
         case ControlPointType::Sampled: return "Sampled";
     }
     return "?";
+}
+
+// Renders one Connection lane-by-lane: for each side (left = positive ids/backward, right =
+// negative ids/forward, both stored center-outward per model.hpp), walks outward from the
+// reference line accumulating each lane's own width (interpolated across a width/width_end taper)
+// as a filled quad strip offset along the polyline's local left-normal, starting from
+// `lanes.lane_offset` -- the same offset the OpenDRIVE writer itself applies between the reference
+// line and the lane stack (model::compute_lane_offset).
+void draw_connection_lanes(ImDrawList* draw_list, const Connection& conn, const ImVec2& origin, const Camera& cam) {
+    const auto centerline = connection_polyline(conn);
+    if (centerline.size() < 2) return;
+
+    std::vector<double> s_at(centerline.size(), 0.0);
+    for (std::size_t i = 1; i < centerline.size(); ++i)
+        s_at[i] = s_at[i - 1] + xosm::geo::length(centerline[i] - centerline[i - 1]);
+    const double total_s = s_at.back();
+
+    const auto width_at = [&](const xosm::model::LaneSpec& lane, const double s) {
+        if (lane.width_end < 0.0 || total_s <= 1e-6) return lane.width;
+        return lane.width + (lane.width_end - lane.width) * (s / total_s);
+    };
+
+    std::vector<Vec2> normals(centerline.size());
+    for (std::size_t i = 0; i < centerline.size(); ++i) normals[i] = left_normal(tangent_at(centerline, i));
+
+    for (const bool is_left : {true, false}) {
+        const auto& lanes = is_left ? conn.lanes.left : conn.lanes.right;
+        const double sign = is_left ? 1.0 : -1.0;
+        std::vector<double> cum(centerline.size(), static_cast<double>(conn.lanes.lane_offset));
+        for (std::size_t li = 0; li < lanes.size(); ++li) {
+            const auto& lane = lanes[li];
+            std::vector<ImVec2> inner(centerline.size()), outer(centerline.size());
+            for (std::size_t i = 0; i < centerline.size(); ++i) {
+                const double w = width_at(lane, s_at[i]);
+                const double inner_t = cum[i];
+                const double outer_t = cum[i] + sign * w;
+                inner[i] = world_to_screen(centerline[i] + normals[i] * inner_t, origin, cam);
+                outer[i] = world_to_screen(centerline[i] + normals[i] * outer_t, origin, cam);
+                cum[i] = outer_t;
+            }
+            const ImU32 color = lane_fill_color(conn, is_left, static_cast<int>(li));
+            for (std::size_t i = 1; i < centerline.size(); ++i)
+                draw_list->AddQuadFilled(inner[i - 1], outer[i - 1], outer[i], inner[i], color);
+        }
+    }
+
+    // A thin reference-line stroke at the lane_offset baseline, for orientation on two-way roads.
+    for (std::size_t i = 1; i < centerline.size(); ++i) {
+        const Vec2 a = centerline[i - 1] + normals[i - 1] * static_cast<double>(conn.lanes.lane_offset);
+        const Vec2 b = centerline[i] + normals[i] * static_cast<double>(conn.lanes.lane_offset);
+        draw_list->AddLine(world_to_screen(a, origin, cam), world_to_screen(b, origin, cam),
+                            IM_COL32(255, 255, 255, 90), 1.0f);
+    }
 }
 
 void fit_view(const GeneratedRoadGraph& graph, const ImVec2& canvas_size, Camera& cam) {
@@ -147,16 +220,7 @@ void draw_preview(const GeneratedRoadGraph& graph, Camera& cam) {
         cam.pan.y = mouse.y - origin.y + before_world.y * new_zoom;
     }
 
-    for (const auto& conn : graph.connections) {
-        const auto pts = connection_polyline(conn);
-        if (pts.size() < 2) continue;
-        const ImU32 color = connection_color(conn);
-        const float thickness = conn.junction_id.empty() && !conn.synthetic ? 2.0f : 1.5f;
-        for (std::size_t i = 1; i < pts.size(); ++i) {
-            draw_list->AddLine(world_to_screen(pts[i - 1], origin, cam), world_to_screen(pts[i], origin, cam),
-                                color, thickness);
-        }
-    }
+    for (const auto& conn : graph.connections) draw_connection_lanes(draw_list, conn, origin, cam);
     for (const auto& cp : graph.control_points) {
         const ImVec2 s = world_to_screen(cp.point, origin, cam);
         if (s.x < canvas_p0.x - 20 || s.x > canvas_p0.x + canvas_size.x + 20 ||
@@ -172,6 +236,8 @@ void draw_preview(const GeneratedRoadGraph& graph, Camera& cam) {
 
 struct AppState {
     GeneratedRoadGraph graph;
+    xosm::model::MapModel model;
+    std::string source_name; // basename of the last-imported file, for the export dialog's default name
     Camera camera;
     std::string status = "No file loaded. Use \"Import OSM...\" to begin.";
     bool status_is_error = false;
@@ -189,21 +255,46 @@ void import_osm_file(AppState& app) {
     config.input = path;
     GeneratedRoadGraph graph;
     try {
-        const auto model = osm2xodr::procedural::run_pipeline(config, &graph);
+        auto model = xosm::procedural::run_pipeline(config, &graph);
         app.graph = std::move(graph);
+        app.model = std::move(model);
+        app.source_name = std::filesystem::path(path).stem().string();
         app.have_graph = true;
         app.status_is_error = false;
         char buf[512];
         std::snprintf(buf, sizeof(buf),
                       "Loaded %s: %zu control lines, %zu control points, %zu roads, %zu junctions",
                       path, app.graph.control_lines.size(), app.graph.control_points.size(),
-                      model.roads.size(), model.junctions.size());
+                      app.model.roads.size(), app.model.junctions.size());
         app.status = buf;
         app.fit_pending = true;
     } catch (const std::exception& e) {
         app.have_graph = false;
         app.status_is_error = true;
         app.status = std::string("Failed to import ") + path + ": " + e.what();
+    }
+}
+
+void export_xodr_file(AppState& app) {
+    const char* filters[] = {"*.xodr"};
+    const std::string default_path = (app.source_name.empty() ? "network" : app.source_name) + ".xodr";
+    const char* path = tinyfd_saveFileDialog("Export OpenDRIVE file", default_path.c_str(), 1, filters,
+                                              "OpenDRIVE files (.xodr)");
+    if (!path) return; // user cancelled
+
+    xosm::Options writer_options;
+    writer_options.output = path;
+    writer_options.name = app.source_name.empty() ? "xosm" : app.source_name;
+    try {
+        xosm::xodr::write_file(app.model, writer_options);
+        app.status_is_error = false;
+        char buf[512];
+        std::snprintf(buf, sizeof(buf), "Exported %s (%zu roads, %zu junctions)", path, app.model.roads.size(),
+                      app.model.junctions.size());
+        app.status = buf;
+    } catch (const std::exception& e) {
+        app.status_is_error = true;
+        app.status = std::string("Failed to export ") + path + ": " + e.what();
     }
 }
 
@@ -222,7 +313,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(1280, 800, "osm2xodr - procedural road network viewer", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1280, 800, "XOSM - road network viewer", nullptr, nullptr);
     if (!window) {
         glfwTerminate();
         return 1;
@@ -249,7 +340,7 @@ int main() {
         const ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
         ImGui::SetNextWindowSize(viewport->WorkSize);
-        ImGui::Begin("osm2xodr", nullptr,
+        ImGui::Begin("xosm", nullptr,
                       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                           ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
@@ -257,6 +348,8 @@ int main() {
         if (ImGui::Button("Import OSM...")) import_osm_file(app);
         ImGui::SameLine();
         ImGui::BeginDisabled(!app.have_graph);
+        if (ImGui::Button("Export .xodr...")) export_xodr_file(app);
+        ImGui::SameLine();
         if (ImGui::Button("Fit View")) app.fit_pending = true;
         ImGui::EndDisabled();
         ImGui::SameLine();

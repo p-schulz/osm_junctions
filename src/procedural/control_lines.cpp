@@ -1,12 +1,12 @@
-#include "osm2xodr/procedural/control_lines.hpp"
+#include "xosm/procedural/control_lines.hpp"
 
-#include "osm2xodr/procedural/geo_extra.hpp"
+#include "xosm/procedural/geo_extra.hpp"
 #include "way_graph.hpp"
 
 #include <algorithm>
 #include <unordered_set>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 bool control_lines_compatible(const Tags& a, const Tags& b) {
     if (tag_value_or(a, "highway", "") != tag_value_or(b, "highway", "")) return false;
@@ -150,4 +150,4 @@ std::vector<ControlLine> extract_control_lines(const osm::ParseResult& parsed, c
     return lines;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

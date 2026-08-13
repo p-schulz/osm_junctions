@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace osm2xodr::util {
+namespace xosm::util {
 
 [[noreturn]] inline void fail(const std::string& msg) {
     throw std::runtime_error(msg);
@@ -97,4 +97,4 @@ inline bool falsy_osm(const std::string& v) {
     return l == "no" || l == "false" || l == "0" || l == "none" || l == "separate";
 }
 
-} // namespace osm2xodr::util
+} // namespace xosm::util

@@ -1,16 +1,16 @@
 #include "fixtures_path.hpp"
 #include "test_framework.hpp"
 
-#include "osm2xodr/options.hpp"
-#include "osm2xodr/osm_parse.hpp"
-#include "osm2xodr/procedural/control_lines.hpp"
-#include "osm2xodr/procedural/control_points.hpp"
+#include "xosm/options.hpp"
+#include "xosm/osm_parse.hpp"
+#include "xosm/procedural/control_lines.hpp"
+#include "xosm/procedural/control_points.hpp"
 
 #include <algorithm>
 
-using namespace osm2xodr;
-using namespace osm2xodr::procedural;
-using osm2xodr::testing::TestContext;
+using namespace xosm;
+using namespace xosm::procedural;
+using xosm::testing::TestContext;
 
 namespace {
 

@@ -1,13 +1,13 @@
-#include "osm2xodr/procedural/grouping.hpp"
+#include "xosm/procedural/grouping.hpp"
 
-#include "osm2xodr/geo.hpp"
-#include "osm2xodr/procedural/geo_extra.hpp"
+#include "xosm/geo.hpp"
+#include "xosm/procedural/geo_extra.hpp"
 
 #include <algorithm>
 #include <numeric>
 #include <unordered_map>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 namespace {
 
@@ -110,4 +110,4 @@ std::vector<ControlLineGroup> group_control_lines(const std::vector<ControlLine>
     return groups;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

@@ -1,4 +1,4 @@
-#include "osm2xodr/osm_parse.hpp"
+#include "xosm/osm_parse.hpp"
 
 #include <osmium/handler/node_locations_for_ways.hpp>
 #include <osmium/index/map/flex_mem.hpp>
@@ -7,7 +7,7 @@
 
 #include <unordered_set>
 
-namespace osm2xodr::osm {
+namespace xosm::osm {
 
 const std::vector<std::string>& vehicle_highway_values() {
     static const std::vector<std::string> values = {
@@ -94,4 +94,4 @@ ParseResult parse_osm(const Options& options) {
     return result;
 }
 
-} // namespace osm2xodr::osm
+} // namespace xosm::osm

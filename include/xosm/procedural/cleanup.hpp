@@ -1,13 +1,13 @@
 #pragma once
 
-#include "osm2xodr/model.hpp"
-#include "osm2xodr/procedural/config.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/model.hpp"
+#include "xosm/procedural/config.hpp"
+#include "xosm/procedural/types.hpp"
 
 #include <string>
 #include <vector>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 // Repairs lane-count mismatches at plain (non-junction) degree-2 control points where two
 // different control lines meet with different total lane counts on the two sides: inserts a short
@@ -23,4 +23,4 @@ void repair_lane_mismatches(GeneratedRoadGraph& graph, const GeneratorConfig& co
 // mutate the model. Independent of (and in addition to) --validate's libOpenDRIVE XML read-back.
 std::vector<std::string> validate_map_model(const model::MapModel& model);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

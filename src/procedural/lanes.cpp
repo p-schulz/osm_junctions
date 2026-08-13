@@ -1,12 +1,12 @@
-#include "osm2xodr/procedural/lanes.hpp"
+#include "xosm/procedural/lanes.hpp"
 
-#include "osm2xodr/util.hpp"
+#include "xosm/util.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 int default_lane_count_for_highway(const std::string& highway) {
     static const std::unordered_map<std::string, int> table = {
@@ -134,4 +134,4 @@ void configure_lanes(GeneratedRoadGraph& graph, const GeneratorConfig& config) {
     }
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "osm2xodr/geo.hpp"
-#include "osm2xodr/options.hpp"
-#include "osm2xodr/tags.hpp"
+#include "xosm/geo.hpp"
+#include "xosm/options.hpp"
+#include "xosm/tags.hpp"
 
 #include <osmium/handler.hpp>
 #include <osmium/osm/node.hpp>
@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-namespace osm2xodr::osm {
+namespace xosm::osm {
 
 struct WayNode {
     std::int64_t ref = 0;
@@ -145,4 +145,4 @@ struct ParseResult {
 
 ParseResult parse_osm(const Options& options);
 
-} // namespace osm2xodr::osm
+} // namespace xosm::osm

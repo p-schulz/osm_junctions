@@ -1,9 +1,9 @@
-#include "osm2xodr/procedural/geo_extra.hpp"
+#include "xosm/procedural/geo_extra.hpp"
 
 #include <algorithm>
 #include <cmath>
 
-namespace osm2xodr::procedural::geo_extra {
+namespace xosm::procedural::geo_extra {
 
 namespace {
 
@@ -176,4 +176,4 @@ double polyline_heading_near(const std::vector<geo::Vec2>& points, const bool ne
     return geo::heading(points.front(), points.back());
 }
 
-} // namespace osm2xodr::procedural::geo_extra
+} // namespace xosm::procedural::geo_extra

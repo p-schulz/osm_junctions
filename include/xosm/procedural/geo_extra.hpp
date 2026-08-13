@@ -1,14 +1,14 @@
 #pragma once
 
-#include "osm2xodr/geo.hpp"
-#include "osm2xodr/model.hpp"
+#include "xosm/geo.hpp"
+#include "xosm/model.hpp"
 
 #include <optional>
 #include <vector>
 
-// Small geometry helpers that extend osm2xodr::geo (geo.hpp) for the procedural generator, without
+// Small geometry helpers that extend xosm::geo (geo.hpp) for the procedural generator, without
 // modifying that existing coordinate/projection utility module.
-namespace osm2xodr::procedural::geo_extra {
+namespace xosm::procedural::geo_extra {
 
 // Ramer-Douglas-Peucker polyline simplification. Endpoints are always preserved; `tolerance_m` is
 // the max perpendicular deviation a dropped vertex may introduce. Used to turn a merged OSM
@@ -52,4 +52,4 @@ model::GeomPrimitive hermite_bezier_geometry(const geo::Vec2& p0, double hdg0, c
 // (center-side) lane when true, the outermost when false.
 std::vector<std::pair<int, int>> pair_lane_slots(int count_in, int count_out, bool split_first);
 
-} // namespace osm2xodr::procedural::geo_extra
+} // namespace xosm::procedural::geo_extra

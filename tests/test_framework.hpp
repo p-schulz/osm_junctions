@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-namespace osm2xodr::testing {
+namespace xosm::testing {
 
 struct TestContext {
     int checks = 0;
@@ -26,7 +26,7 @@ struct TestContext {
     }
 };
 
-} // namespace osm2xodr::testing
+} // namespace xosm::testing
 
 #define CHECK(ctx, cond) (ctx).check((cond), #cond)
 

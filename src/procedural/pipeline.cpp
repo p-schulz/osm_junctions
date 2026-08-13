@@ -1,18 +1,18 @@
-#include "osm2xodr/procedural/pipeline.hpp"
+#include "xosm/procedural/pipeline.hpp"
 
-#include "osm2xodr/options.hpp"
-#include "osm2xodr/osm_parse.hpp"
-#include "osm2xodr/procedural/cleanup.hpp"
-#include "osm2xodr/procedural/control_lines.hpp"
-#include "osm2xodr/procedural/control_points.hpp"
-#include "osm2xodr/procedural/geojson_debug.hpp"
-#include "osm2xodr/procedural/graph.hpp"
-#include "osm2xodr/procedural/grouping.hpp"
-#include "osm2xodr/procedural/intersections.hpp"
-#include "osm2xodr/procedural/lanes.hpp"
-#include "osm2xodr/procedural/model_assembly.hpp"
+#include "xosm/options.hpp"
+#include "xosm/osm_parse.hpp"
+#include "xosm/procedural/cleanup.hpp"
+#include "xosm/procedural/control_lines.hpp"
+#include "xosm/procedural/control_points.hpp"
+#include "xosm/procedural/geojson_debug.hpp"
+#include "xosm/procedural/graph.hpp"
+#include "xosm/procedural/grouping.hpp"
+#include "xosm/procedural/intersections.hpp"
+#include "xosm/procedural/lanes.hpp"
+#include "xosm/procedural/model_assembly.hpp"
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 model::MapModel run_pipeline(const GeneratorConfig& config, GeneratedRoadGraph* out_graph) {
     Options osm_options;
@@ -40,4 +40,4 @@ model::MapModel run_pipeline(const GeneratorConfig& config, GeneratedRoadGraph* 
     return map_model;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

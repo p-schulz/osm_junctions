@@ -1,6 +1,6 @@
-#include "osm2xodr/procedural/control_points.hpp"
+#include "xosm/procedural/control_points.hpp"
 
-#include "osm2xodr/procedural/geo_extra.hpp"
+#include "xosm/procedural/geo_extra.hpp"
 #include "way_graph.hpp"
 
 #include <algorithm>
@@ -9,7 +9,7 @@
 #include <numeric>
 #include <unordered_set>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 namespace {
 
@@ -245,4 +245,4 @@ std::vector<ControlPoint> extract_control_points(const osm::ParseResult& parsed,
     return final_result;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

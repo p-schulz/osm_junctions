@@ -1,11 +1,11 @@
 #pragma once
 
-#include "osm2xodr/model.hpp"
-#include "osm2xodr/osm_parse.hpp"
-#include "osm2xodr/procedural/config.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/model.hpp"
+#include "xosm/osm_parse.hpp"
+#include "xosm/procedural/config.hpp"
+#include "xosm/procedural/types.hpp"
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 // Converts the finished GeneratedRoadGraph into a model::MapModel -- the existing OpenDRIVE
 // writer's own input contract (see xodr_writer.hpp) -- so xodr::write_file can be reused unchanged.
@@ -15,4 +15,4 @@ namespace osm2xodr::procedural {
 model::MapModel assemble_map_model(const GeneratedRoadGraph& graph, const osm::ParseResult& parsed,
                                     const GeneratorConfig& config);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

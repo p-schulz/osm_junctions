@@ -1,9 +1,9 @@
-#include "osm2xodr/procedural/cli.hpp"
-#include "osm2xodr/procedural/pipeline.hpp"
-#include "osm2xodr/util.hpp"
-#include "osm2xodr/xodr_writer.hpp"
+#include "xosm/procedural/cli.hpp"
+#include "xosm/procedural/pipeline.hpp"
+#include "xosm/util.hpp"
+#include "xosm/xodr_writer.hpp"
 
-#ifdef OSM2XODR_WITH_LIBOPENDRIVE
+#ifdef XOSM_WITH_LIBOPENDRIVE
 #include <OpenDriveMap.h>
 #endif
 
@@ -11,7 +11,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 namespace {
 
@@ -19,7 +19,7 @@ void write_report(const model::MapModel& model, const GeneratedRoadGraph& graph,
     if (config.report_path.empty()) return;
     std::ofstream os(config.report_path);
     if (!os) util::fail("Could not open report file: " + config.report_path);
-    os << "osm2xodr-procedural conversion report\n=====================================\n\n";
+    os << "xosm conversion report\n=====================================\n\n";
     os << "Input: " << config.input << "\nOutput: " << config.output << "\n\n";
     os << "Control lines: " << graph.control_lines.size() << "\n";
     os << "Control points: " << graph.control_points.size() << "\n";
@@ -35,11 +35,11 @@ void write_report(const model::MapModel& model, const GeneratedRoadGraph& graph,
 }
 
 void validate_with_libopendrive([[maybe_unused]] const std::string& path) {
-#ifdef OSM2XODR_WITH_LIBOPENDRIVE
+#ifdef XOSM_WITH_LIBOPENDRIVE
     odr::OpenDriveMap map(path);
     std::cerr << "libOpenDRIVE read-back: " << map.get_roads().size() << " roads parsed\n";
 #else
-    util::fail("--validate requested, but osm2xodr-procedural was built without OSM2XODR_ENABLE_LIBOPENDRIVE_VALIDATION=ON");
+    util::fail("--validate requested, but xosm was built without XOSM_ENABLE_LIBOPENDRIVE_VALIDATION=ON");
 #endif
 }
 
@@ -70,11 +70,11 @@ int run(const int argc, char** argv) {
 
 } // namespace
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural
 
 int main(int argc, char** argv) {
     try {
-        return osm2xodr::procedural::run(argc, argv);
+        return xosm::procedural::run(argc, argv);
     } catch (const std::exception& e) {
         std::cerr << "error: " << e.what() << "\n";
         return 1;

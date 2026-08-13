@@ -1,12 +1,12 @@
 #pragma once
 
-#include "osm2xodr/osm_parse.hpp"
-#include "osm2xodr/procedural/config.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/osm_parse.hpp"
+#include "xosm/procedural/config.hpp"
+#include "xosm/procedural/types.hpp"
 
 #include <vector>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 // Extracts ControlLines from OSM road geometry: selects ways whose highway=* value is in
 // `config.control_line_highways`, merges adjacent ways into continuous corridors wherever the
@@ -23,4 +23,4 @@ std::vector<ControlLine> extract_control_lines(const osm::ParseResult& parsed, c
 // real lane-count or directionality change would silently misrepresent the corridor.
 bool control_lines_compatible(const Tags& a, const Tags& b);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

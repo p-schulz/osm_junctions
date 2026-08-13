@@ -1,13 +1,13 @@
 #pragma once
 
-#include "osm2xodr/util.hpp"
+#include "xosm/util.hpp"
 
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <utility>
 
-namespace osm2xodr {
+namespace xosm {
 
 using Tags = std::unordered_map<std::string, std::string>;
 
@@ -55,7 +55,7 @@ inline void swap_directional_tags(Tags& tags) {
     // model_builder.cpp) so infer_lanes stays pure/way-local while still surviving fuse_chain's
     // from-scratch LanePlan recompute on a reversed merge-chain constituent, exactly like the
     // sidewalk pair above.
-    swap_if_present(tags, "osm2xodr:grass_verge_left", "osm2xodr:grass_verge_right");
+    swap_if_present(tags, "xosm:grass_verge_left", "xosm:grass_verge_right");
 }
 
-} // namespace osm2xodr
+} // namespace xosm

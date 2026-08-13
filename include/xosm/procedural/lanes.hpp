@@ -1,9 +1,9 @@
 #pragma once
 
-#include "osm2xodr/procedural/config.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/procedural/config.hpp"
+#include "xosm/procedural/types.hpp"
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 // Fills in `model::LanePlan` for every non-synthetic Connection, from OSM tags first
 // (lanes/lanes:forward/lanes:backward/oneway/turn:lanes), falling back to deterministic
@@ -21,4 +21,4 @@ int default_lane_count_for_highway(const std::string& highway);
 // OSM supplies no explicit oneway=* tag.
 bool default_oneway_for_highway(const std::string& highway);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

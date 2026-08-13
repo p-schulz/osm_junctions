@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-using osm2xodr::testing::TestContext;
+using xosm::testing::TestContext;
 
 void run_control_line_tests(TestContext&);
 void run_control_point_tests(TestContext&);

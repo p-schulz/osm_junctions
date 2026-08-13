@@ -1,11 +1,11 @@
 #pragma once
 
-#include "osm2xodr/procedural/config.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/procedural/config.hpp"
+#include "xosm/procedural/types.hpp"
 
 #include <vector>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 // Groups control lines by OSM topology instead of JunctionArt's random pairing:
 //  - Component: control lines connected (directly or transitively) via a shared control point.
@@ -19,4 +19,4 @@ std::vector<ControlLineGroup> group_control_lines(const std::vector<ControlLine>
                                                     const std::vector<ControlPoint>& control_points,
                                                     const GeneratorConfig& config);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

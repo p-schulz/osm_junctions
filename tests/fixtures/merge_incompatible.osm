@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<osm version='0.6' generator='osm2xodr-test'>
+<osm version='0.6' generator='xosm-test'>
   <node id='1' lat='52.0000' lon='13.0000' />
   <node id='2' lat='52.0010' lon='13.0000' />
   <node id='3' lat='52.0020' lon='13.0000' />

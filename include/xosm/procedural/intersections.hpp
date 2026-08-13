@@ -1,9 +1,9 @@
 #pragma once
 
-#include "osm2xodr/procedural/config.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/procedural/config.hpp"
+#include "xosm/procedural/types.hpp"
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 // For every control point with incident-connection degree >= config.junction_min_degree:
 //  - trims each incident Connection's geometry back from the control point by a lane-width-derived
@@ -22,4 +22,4 @@ namespace osm2xodr::procedural {
 //    incident (now-trimmed) roads' own predecessor/successor to the junction instead of each other.
 void generate_intersections(GeneratedRoadGraph& graph, const GeneratorConfig& config);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

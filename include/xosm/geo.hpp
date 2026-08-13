@@ -1,6 +1,6 @@
 #pragma once
 
-#include "osm2xodr/util.hpp"
+#include "xosm/util.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-namespace osm2xodr::geo {
+namespace xosm::geo {
 
 constexpr double kPi = 3.141592653589793238462643383279502884;
 constexpr double kEarthRadiusM = 6378137.0;
@@ -122,4 +122,4 @@ inline ProjectionOnPolyline project_to_polyline(const std::vector<Vec2>& pts, co
     return best;
 }
 
-} // namespace osm2xodr::geo
+} // namespace xosm::geo

@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_set>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 enum class SplitStrategy { SplitFirst, SplitLast };
 
@@ -16,7 +16,7 @@ enum class SplitStrategy { SplitFirst, SplitLast };
 struct GeneratorConfig {
     std::string input;
     std::string output;
-    std::string name = "osm2xodr-procedural";
+    std::string name = "xosm";
     std::optional<double> origin_lat;
     std::optional<double> origin_lon;
 
@@ -63,4 +63,4 @@ struct GeneratorConfig {
     std::string debug_dir; // if non-empty, dump control_lines/control_points/graph as GeoJSON here
 };
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

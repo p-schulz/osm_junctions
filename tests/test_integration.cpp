@@ -1,10 +1,10 @@
 #include "fixtures_path.hpp"
 #include "test_framework.hpp"
 
-#include "osm2xodr/options.hpp"
-#include "osm2xodr/procedural/cleanup.hpp"
-#include "osm2xodr/procedural/pipeline.hpp"
-#include "osm2xodr/xodr_writer.hpp"
+#include "xosm/options.hpp"
+#include "xosm/procedural/cleanup.hpp"
+#include "xosm/procedural/pipeline.hpp"
+#include "xosm/xodr_writer.hpp"
 
 #include <atomic>
 #include <cstdio>
@@ -13,9 +13,9 @@
 #include <sstream>
 #include <vector>
 
-using namespace osm2xodr;
-using namespace osm2xodr::procedural;
-using osm2xodr::testing::TestContext;
+using namespace xosm;
+using namespace xosm::procedural;
+using xosm::testing::TestContext;
 
 namespace {
 
@@ -71,7 +71,7 @@ std::string generate(const std::string& fixture_name, const GeneratorConfig* con
     GeneratorConfig config = config_override ? *config_override : GeneratorConfig{};
     config.input = fixture(fixture_name);
     config.output = (std::filesystem::temp_directory_path() /
-                      ("osm2xodr_test_" + std::to_string(counter++) + ".xodr")).string();
+                      ("xosm_test_" + std::to_string(counter++) + ".xodr")).string();
     const auto model = run_pipeline(config);
     Options writer_options;
     writer_options.output = config.output;

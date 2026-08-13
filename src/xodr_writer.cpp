@@ -1,7 +1,7 @@
-#include "osm2xodr/xodr_writer.hpp"
+#include "xosm/xodr_writer.hpp"
 
-#include "osm2xodr/tags.hpp"
-#include "osm2xodr/util.hpp"
+#include "xosm/tags.hpp"
+#include "xosm/util.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -10,7 +10,7 @@
 #include <ostream>
 #include <string>
 
-namespace osm2xodr::xodr {
+namespace xosm::xodr {
 
 namespace {
 
@@ -357,7 +357,7 @@ void write_file(const model::MapModel& model, const Options& options) {
        << util::attr("south", model.south)
        << util::attr("east", model.east)
        << util::attr("west", model.west)
-       << util::attr("vendor", "osm2xodr") << ">\n";
+       << util::attr("vendor", "xosm") << ">\n";
     write_indent(os, 4);
     os << "<geoReference><![CDATA[+proj=eqc +lat_ts=" << std::fixed << std::setprecision(8) << model.projector.origin.lat
        << " +lat_0=" << model.projector.origin.lat << " +lon_0=" << model.projector.origin.lon
@@ -371,4 +371,4 @@ void write_file(const model::MapModel& model, const Options& options) {
     os << "</OpenDRIVE>\n";
 }
 
-} // namespace osm2xodr::xodr
+} // namespace xosm::xodr

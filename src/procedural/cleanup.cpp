@@ -1,6 +1,6 @@
-#include "osm2xodr/procedural/cleanup.hpp"
+#include "xosm/procedural/cleanup.hpp"
 
-#include "osm2xodr/procedural/geo_extra.hpp"
+#include "xosm/procedural/geo_extra.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 namespace {
 
@@ -152,4 +152,4 @@ std::vector<std::string> validate_map_model(const model::MapModel& model) {
     return issues;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

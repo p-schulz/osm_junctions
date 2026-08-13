@@ -1,6 +1,6 @@
-#include "osm2xodr/procedural/graph.hpp"
+#include "xosm/procedural/graph.hpp"
 
-#include "osm2xodr/procedural/geo_extra.hpp"
+#include "xosm/procedural/geo_extra.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 namespace {
 
@@ -186,4 +186,4 @@ GeneratedRoadGraph build_graph(std::vector<ControlLine> control_lines, std::vect
     return graph;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

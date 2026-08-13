@@ -1,7 +1,7 @@
-#include "osm2xodr/procedural/model_assembly.hpp"
+#include "xosm/procedural/model_assembly.hpp"
 
-#include "osm2xodr/procedural/geo_extra.hpp"
-#include "osm2xodr/util.hpp"
+#include "xosm/procedural/geo_extra.hpp"
+#include "xosm/util.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -9,7 +9,7 @@
 #include <sstream>
 #include <unordered_map>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 namespace {
 
@@ -154,4 +154,4 @@ model::MapModel assemble_map_model(const GeneratedRoadGraph& graph, const osm::P
     return model;
 }
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural

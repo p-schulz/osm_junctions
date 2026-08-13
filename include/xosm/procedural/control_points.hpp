@@ -1,12 +1,12 @@
 #pragma once
 
-#include "osm2xodr/osm_parse.hpp"
-#include "osm2xodr/procedural/config.hpp"
-#include "osm2xodr/procedural/types.hpp"
+#include "xosm/osm_parse.hpp"
+#include "xosm/procedural/config.hpp"
+#include "xosm/procedural/types.hpp"
 
 #include <vector>
 
-namespace osm2xodr::procedural {
+namespace xosm::procedural {
 
 // Derives ControlPoints from OSM structure -- never from random selection:
 //  - OsmIntersection: every ControlLine terminus whose real OSM node degree (across *all* OSM
@@ -26,4 +26,4 @@ std::vector<ControlPoint> extract_control_points(const osm::ParseResult& parsed,
                                                    const std::vector<ControlLine>& control_lines,
                                                    const GeneratorConfig& config);
 
-} // namespace osm2xodr::procedural
+} // namespace xosm::procedural
