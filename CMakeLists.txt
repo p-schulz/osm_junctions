@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(osm2xodr LANGUAGES CXX)
+project(osm2xodr LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -9,6 +9,7 @@ endif()
 
 option(OSM2XODR_ENABLE_LIBOPENDRIVE_VALIDATION "Build with libOpenDRIVE-based --validate support" OFF)
 option(OSM2XODR_BUILD_TESTS "Build the osm2xodr test suite" ON)
+option(OSM2XODR_BUILD_GUI "Build the imgui-based osm2xodr-gui viewer (fetches GLFW)" ON)
 
 # --- libosmium / protozero (header-only) -----------------------------------
 add_library(osmium_headers INTERFACE)
@@ -39,33 +40,10 @@ if(OSM2XODR_ENABLE_LIBOPENDRIVE_VALIDATION)
     add_subdirectory(external/libOpenDRIVE)
 endif()
 
-# --- legacy tag-inference road generator (src/model_builder.cpp, src/infer.cpp) ---
-# STALE: this pipeline is superseded by the OSM-control-line/control-point procedural
-# generator in src/procedural/. It is kept buildable only so the existing `osm2xodr`
-# CLI keeps working during the deprecation period; see src/model_builder.cpp and
-# src/infer.cpp for the stale banner. Do not extend this pipeline further.
-add_library(osm2xodr_legacy STATIC
-    src/config.cpp
-    src/infer.cpp
-    src/model_builder.cpp
-    src/osm_parse.cpp
-    src/report.cpp
-    src/xodr_writer.cpp
-)
-target_link_libraries(osm2xodr_legacy PUBLIC osm2xodr_core)
-
-add_executable(osm2xodr src/main.cpp src/cli.cpp)
-target_link_libraries(osm2xodr PRIVATE osm2xodr_legacy)
-if(OSM2XODR_ENABLE_LIBOPENDRIVE_VALIDATION)
-    target_link_libraries(osm2xodr PRIVATE OpenDrive::OpenDrive)
-    target_compile_definitions(osm2xodr PRIVATE OSM2XODR_WITH_LIBOPENDRIVE)
-endif()
-
 # --- procedural OSM-control-line/control-point road-network generator ------
 add_library(osm2xodr_procedural STATIC
     src/osm_parse.cpp
     src/xodr_writer.cpp
-    src/procedural/road_type_shim.cpp
     src/procedural/geo_extra.cpp
     src/procedural/control_lines.cpp
     src/procedural/control_points.cpp
@@ -91,11 +69,49 @@ target_link_libraries(osm2xodr_procedural_cli PRIVATE osm2xodr_procedural)
 set_target_properties(osm2xodr_procedural_cli PROPERTIES OUTPUT_NAME osm2xodr-procedural)
 
 if(MSVC)
-    target_compile_options(osm2xodr_legacy PRIVATE /W3)
     target_compile_options(osm2xodr_procedural PRIVATE /W3)
 else()
-    target_compile_options(osm2xodr_legacy PRIVATE -Wall -Wextra)
     target_compile_options(osm2xodr_procedural PRIVATE -Wall -Wextra)
+endif()
+
+# --- GUI viewer: imgui (external/imgui) + GLFW/OpenGL3 backend + tinyfiledialogs ---
+if(OSM2XODR_BUILD_GUI)
+    include(FetchContent)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4
+    )
+    FetchContent_MakeAvailable(glfw)
+    find_package(OpenGL REQUIRED)
+
+    set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
+    add_library(imgui STATIC
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_tables.cpp
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+    )
+    target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends)
+    target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
+
+    add_library(tinyfiledialogs STATIC external/tinyfiledialogs/tinyfiledialogs.c)
+    target_include_directories(tinyfiledialogs PUBLIC external/tinyfiledialogs)
+
+    add_executable(osm2xodr_gui src/gui/main.cpp)
+    target_link_libraries(osm2xodr_gui PRIVATE osm2xodr_procedural imgui tinyfiledialogs OpenGL::GL)
+    set_target_properties(osm2xodr_gui PROPERTIES OUTPUT_NAME osm2xodr-gui)
+    if(NOT MSVC)
+        target_compile_options(osm2xodr_gui PRIVATE -Wall -Wextra)
+    endif()
+    if(APPLE)
+        target_compile_definitions(osm2xodr_gui PRIVATE GL_SILENCE_DEPRECATION)
+    endif()
 endif()
 
 if(OSM2XODR_BUILD_TESTS)

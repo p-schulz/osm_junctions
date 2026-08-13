@@ -1,6 +1,5 @@
 #include "osm2xodr/xodr_writer.hpp"
 
-#include "osm2xodr/infer.hpp"
 #include "osm2xodr/tags.hpp"
 #include "osm2xodr/util.hpp"
 
@@ -12,6 +11,20 @@
 #include <string>
 
 namespace osm2xodr::xodr {
+
+namespace {
+
+// Pure, non-heuristic highway=* -> OpenDRIVE <type> classification.
+std::string road_type(const Tags& tags) {
+    const auto highway = tag_value_or(tags, "highway", "road");
+    if (highway == "motorway" || highway == "motorway_link") return "motorway";
+    if (highway == "trunk" || highway == "primary" || highway == "secondary" || highway == "tertiary" ||
+        highway == "trunk_link" || highway == "primary_link" || highway == "secondary_link" || highway == "tertiary_link")
+        return "rural";
+    return "town";
+}
+
+} // namespace
 
 void write_indent(std::ostream& os, const int indent) {
     for (int i = 0; i < indent; ++i) os << ' ';
@@ -292,10 +305,10 @@ void write_road(std::ostream& os, const model::RoadSegment& road, const int inde
     }
 
     write_indent(os, indent + 2);
-    os << "<type" << util::attr("s", 0.0) << util::attr("type", infer::road_type(road.tags)) << "/>\n";
+    os << "<type" << util::attr("s", 0.0) << util::attr("type", road_type(road.tags)) << "/>\n";
     for (const auto& section : road.extra_lane_sections) {
         write_indent(os, indent + 2);
-        os << "<type" << util::attr("s", section.s_offset) << util::attr("type", infer::road_type(section.tags)) << "/>\n";
+        os << "<type" << util::attr("s", section.s_offset) << util::attr("type", road_type(section.tags)) << "/>\n";
     }
 
     write_plan_view(os, road, indent + 2);
