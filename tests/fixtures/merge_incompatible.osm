@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='osm2xodr-test'>
+  <node id='1' lat='52.0000' lon='13.0000' />
+  <node id='2' lat='52.0010' lon='13.0000' />
+  <node id='3' lat='52.0020' lon='13.0000' />
+  <way id='101'>
+    <nd ref='1'/><nd ref='2'/>
+    <tag k='highway' v='secondary'/>
+    <tag k='name' v='Elm Street'/>
+    <tag k='lanes' v='2'/>
+  </way>
+  <way id='102'>
+    <nd ref='2'/><nd ref='3'/>
+    <tag k='highway' v='secondary'/>
+    <tag k='name' v='Oak Street'/>
+    <tag k='lanes' v='1'/>
+  </way>
+</osm>

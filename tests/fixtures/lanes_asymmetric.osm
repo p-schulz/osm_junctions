@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='osm2xodr-test'>
+  <!-- Way 401: two-way, explicit asymmetric lanes:forward=2/lanes:backward=1.
+       Way 402: oneway, lanes=3 (all forward, zero backward). -->
+  <node id='1' lat='52.0000' lon='13.0000' />
+  <node id='2' lat='52.0010' lon='13.0000' />
+  <node id='3' lat='52.0000' lon='13.0010' />
+  <node id='4' lat='52.0010' lon='13.0010' />
+  <way id='401'>
+    <nd ref='1'/><nd ref='2'/>
+    <tag k='highway' v='secondary'/>
+    <tag k='name' v='Asymmetric Ave'/>
+    <tag k='lanes' v='3'/>
+    <tag k='lanes:forward' v='2'/>
+    <tag k='lanes:backward' v='1'/>
+  </way>
+  <way id='402'>
+    <nd ref='3'/><nd ref='4'/>
+    <tag k='highway' v='primary'/>
+    <tag k='name' v='Oneway Blvd'/>
+    <tag k='oneway' v='yes'/>
+    <tag k='lanes' v='3'/>
+  </way>
+</osm>
