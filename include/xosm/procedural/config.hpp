@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace xosm::procedural {
@@ -55,6 +56,14 @@ struct GeneratorConfig {
     double junction_connector_setback_m = 6.0; // min distance an incident road is trimmed back
                                                 // from the control point before the junction interior
     int junction_min_degree = 3;
+
+    // Turn radius (meters) driving junction connector curve shape and setback (see
+    // intersections::turn_radius_for_highway): a per-highway-class override map (checked first),
+    // then a built-in per-class default tier, then this flat fallback for an unmapped class -- the
+    // resolved value is always multiplied by junction_turn_radius_scale.
+    double junction_turn_radius_m = 8.0;
+    std::unordered_map<std::string, double> junction_turn_radius_overrides;
+    double junction_turn_radius_scale = 1.0;
 
     bool left_hand_traffic = false;
 

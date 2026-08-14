@@ -104,9 +104,17 @@ geo::Vec2 trim_polyline_end(std::vector<geo::Vec2>& pts, const bool at_end, doub
     return result;
 }
 
-model::GeomPrimitive hermite_bezier_geometry(const geo::Vec2& p0, const double hdg0, const geo::Vec2& p3, const double hdg3) {
+model::GeomPrimitive hermite_bezier_geometry(const geo::Vec2& p0, const double hdg0, const geo::Vec2& p3,
+                                              const double hdg3, const std::optional<double> turn_radius_m) {
     const double chord = geo::length(p3 - p0);
-    const double lever = std::max(chord / 3.0, 0.5);
+    double lever;
+    if (turn_radius_m && *turn_radius_m > 0.0) {
+        const double theta = std::abs(geo::norm_angle(hdg3 - hdg0));
+        const double radius_lever = *turn_radius_m * (4.0 / 3.0) * std::tan(theta / 4.0);
+        lever = std::max(radius_lever, std::max(chord * 0.1, 0.5));
+    } else {
+        lever = std::max(chord / 3.0, 0.5);
+    }
     const geo::Vec2 t0{std::cos(hdg0), std::sin(hdg0)};
     const geo::Vec2 t3{std::cos(hdg3), std::sin(hdg3)};
     const geo::Vec2 p1 = p0 + t0 * lever;

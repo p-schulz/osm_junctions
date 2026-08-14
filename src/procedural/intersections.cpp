@@ -13,6 +13,10 @@ namespace {
 constexpr double kHeadingSampleM = 8.0;
 constexpr double kThroughAngleDeg = 25.0;
 constexpr double kUTurnAngleDeg = 150.0;
+// How much of a leg's own turn radius to additionally clear as setback, on top of the
+// lane-width/config.junction_connector_setback_m floor -- enough room for the Bezier curve's
+// radius-driven handle to read as smooth rather than forced against the trim point.
+constexpr double kSetbackRadiusFactor = 0.5;
 
 double into_junction_heading(const std::vector<geo::Vec2>& pts, const bool at_end) {
     if (at_end) return geo_extra::polyline_heading_near(pts, false, kHeadingSampleM);
@@ -54,6 +58,24 @@ struct Leg {
 
 } // namespace
 
+double turn_radius_for_highway(const std::string& highway, const GeneratorConfig& config) {
+    static const std::unordered_map<std::string, double> kDefaultTable = {
+        {"motorway", 15.0}, {"motorway_link", 15.0}, {"trunk", 15.0}, {"trunk_link", 15.0},
+        {"primary", 10.0}, {"primary_link", 10.0},
+        {"secondary", 8.0}, {"secondary_link", 8.0}, {"tertiary", 8.0}, {"tertiary_link", 8.0},
+        {"residential", 5.0}, {"unclassified", 5.0}, {"living_street", 5.0}, {"service", 5.0},
+        {"road", 5.0}, {"busway", 5.0}, {"construction", 5.0},
+    };
+
+    double radius = config.junction_turn_radius_m;
+    if (const auto it = config.junction_turn_radius_overrides.find(highway); it != config.junction_turn_radius_overrides.end()) {
+        radius = it->second;
+    } else if (const auto dt = kDefaultTable.find(highway); dt != kDefaultTable.end()) {
+        radius = dt->second;
+    }
+    return radius * config.junction_turn_radius_scale;
+}
+
 void generate_intersections(GeneratedRoadGraph& graph, const GeneratorConfig& config) {
     std::unordered_map<std::string, int> degree;
     for (const auto& c : graph.connections) {
@@ -80,7 +102,9 @@ void generate_intersections(GeneratedRoadGraph& graph, const GeneratorConfig& co
             const double entry_hdg_before_trim = into_junction_heading(conn.geometry, at_end);
             const double half_width = model::sum_side_width(conn.lanes.right, at_end) / 2.0 +
                                        model::sum_side_width(conn.lanes.left, at_end) / 2.0;
-            const double setback = std::max(config.junction_connector_setback_m, half_width + 1.0);
+            const double leg_radius = turn_radius_for_highway(conn.highway, config);
+            const double setback = std::max({config.junction_connector_setback_m, half_width + 1.0,
+                                              leg_radius * kSetbackRadiusFactor});
             const geo::Vec2 trimmed = geo_extra::trim_polyline_end(conn.geometry, at_end, setback);
 
             Leg leg;
@@ -147,8 +171,15 @@ void generate_intersections(GeneratedRoadGraph& graph, const GeneratorConfig& co
             }
             plan.lane_offset = model::compute_lane_offset(plan);
 
+            // The tighter of the two connected roads' classes governs the movement's radius
+            // (matches normal road-design practice: a minor side street sets how sharp a corner is,
+            // not the major road it meets).
+            const double movement_radius =
+                std::min(turn_radius_for_highway(graph.connections[in_leg.connection_index].highway, config),
+                         turn_radius_for_highway(graph.connections[out_leg.connection_index].highway, config));
             const auto geom = geo_extra::hermite_bezier_geometry(in_leg.entry_point, in_leg.entry_hdg,
-                                                                   out_leg.entry_point, geo::norm_angle(out_leg.exit_hdg));
+                                                                   out_leg.entry_point, geo::norm_angle(out_leg.exit_hdg),
+                                                                   movement_radius);
 
             const std::string predecessor_conn_id = graph.connections[in_leg.connection_index].id;
             const std::string successor_conn_id = graph.connections[out_leg.connection_index].id;

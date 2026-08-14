@@ -41,9 +41,18 @@ geo::Vec2 trim_polyline_end(std::vector<geo::Vec2>& pts, bool at_end, double dis
 // Builds a single ParamPoly3 (cubic Bezier control points, model.hpp's own primitive) connecting
 // `p0` (with tangent direction `hdg0`, pointing into the curve) to `p3` (with tangent direction
 // `hdg3`, pointing along the direction of travel leaving the curve) via the standard Hermite-to-
-// Bezier construction (control points at p0 + t0*chord/3 and p3 - t3*chord/3), with an approximate
-// arclength `length` (the usual (chord + control-polygon length)/2 cubic-Bezier estimate).
-model::GeomPrimitive hermite_bezier_geometry(const geo::Vec2& p0, double hdg0, const geo::Vec2& p3, double hdg3);
+// Bezier construction, with an approximate arclength `length` (the usual
+// (chord + control-polygon length)/2 cubic-Bezier estimate).
+//
+// `turn_radius_m`, when given (and positive), drives the tangent-handle length from a real turn
+// radius R instead of a flat chord fraction: `k = R * 4/3 * tan(theta/4)`, the standard cubic-Bezier
+// approximation of a circular arc of radius R subtending deflection angle theta (the angle between
+// hdg0 extended and hdg3). A floor of `max(chord*0.1, 0.5)` keeps near-straight movements (theta ~
+// 0, where the radius formula alone collapses toward a zero-length, kinked handle) from looking
+// pinched. Omitted (the default): unchanged flat `chord/3` handle -- used by cleanup.cpp's lane-
+// count-mismatch bridges, which aren't turning movements and have no radius to speak of.
+model::GeomPrimitive hermite_bezier_geometry(const geo::Vec2& p0, double hdg0, const geo::Vec2& p3, double hdg3,
+                                              std::optional<double> turn_radius_m = std::nullopt);
 
 // Maps `count_in` lane slots onto `count_out` lane slots (both center-outward local indices) as a
 // set of (in,out) pairs covering every slot on both sides at least once, used both for a junction

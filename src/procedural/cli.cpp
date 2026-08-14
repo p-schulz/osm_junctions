@@ -49,6 +49,12 @@ GeneratorConfig parse_args(const int argc, char** argv) {
                 "  --split-strategy <first|last>       Which lane absorbs a junction lane-count mismatch\n"
                 "  --junction-setback <m>              Min incident-road trim before a junction, default 6.0\n"
                 "  --junction-min-degree <n>           Minimum incident-connection count to form a junction\n"
+                "  --junction-turn-radius <m>          Fallback connector turn radius for road classes\n"
+                "                                       without a specific tier, default 8.0\n"
+                "  --junction-turn-radius-scale <f>    Multiplies every resolved turn radius, default 1.0\n"
+                "  --junction-turn-radius-for <highway>=<m>  Override the turn radius for one highway=*\n"
+                "                                       class (repeatable; e.g. --junction-turn-radius-for\n"
+                "                                       residential=4)\n"
                 "  --left-hand-traffic                 Use left-hand movement classification\n"
                 "  --report <file>                     Write conversion report\n"
                 "  --validate                          Read generated XODR back with libOpenDRIVE if enabled\n"
@@ -97,6 +103,17 @@ GeneratorConfig parse_args(const int argc, char** argv) {
             c.junction_connector_setback_m = util::parse_double_prefix(require_value(i, arg)).value_or(c.junction_connector_setback_m);
         } else if (arg == "--junction-min-degree") {
             c.junction_min_degree = util::parse_int(require_value(i, arg)).value_or(c.junction_min_degree);
+        } else if (arg == "--junction-turn-radius") {
+            c.junction_turn_radius_m = util::parse_double_prefix(require_value(i, arg)).value_or(c.junction_turn_radius_m);
+        } else if (arg == "--junction-turn-radius-scale") {
+            c.junction_turn_radius_scale = util::parse_double_prefix(require_value(i, arg)).value_or(c.junction_turn_radius_scale);
+        } else if (arg == "--junction-turn-radius-for") {
+            const auto kv = require_value(i, arg);
+            const auto eq = kv.find('=');
+            if (eq == std::string::npos) util::fail("--junction-turn-radius-for expects <highway>=<meters>, got: " + kv);
+            const auto radius = util::parse_double_prefix(kv.substr(eq + 1));
+            if (!radius) util::fail("--junction-turn-radius-for: invalid radius in: " + kv);
+            c.junction_turn_radius_overrides[kv.substr(0, eq)] = *radius;
         } else if (arg == "--left-hand-traffic") {
             c.left_hand_traffic = true;
         } else if (arg == "--report") {
@@ -116,6 +133,10 @@ GeneratorConfig parse_args(const int argc, char** argv) {
     if (c.max_control_point_spacing_m <= c.min_control_point_spacing_m) util::fail("--max-spacing must exceed --min-spacing");
     if (c.simplify_tolerance_m < 0.0) util::fail("--simplify-tolerance must not be negative");
     if (c.junction_min_degree < 2) util::fail("--junction-min-degree must be at least 2");
+    if (c.junction_turn_radius_m <= 0.0) util::fail("--junction-turn-radius must be positive");
+    if (c.junction_turn_radius_scale <= 0.0) util::fail("--junction-turn-radius-scale must be positive");
+    for (const auto& [highway, radius] : c.junction_turn_radius_overrides)
+        if (radius <= 0.0) util::fail("--junction-turn-radius-for " + highway + ": radius must be positive");
     return c;
 }
 

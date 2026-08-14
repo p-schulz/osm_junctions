@@ -4,6 +4,7 @@ add_executable(xosm_tests
     test_control_points.cpp
     test_lanes.cpp
     test_graph.cpp
+    test_intersections.cpp
     test_integration.cpp
 )
 target_link_libraries(xosm_tests PRIVATE xosm_procedural)
